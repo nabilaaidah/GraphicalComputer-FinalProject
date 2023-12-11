@@ -79,27 +79,7 @@ gui
   .step(0.001)
   .onChange(updateAllMaterials);
 
-/**
- * Models
- */
-// gltfLoader.load('/models/FlightHelmet/glTF/FlightHelmet.gltf', gltf => {
-//   //   console.log('Success');
-//   //   console.log(gltf);
-//   gltf.scene.scale.set(10, 10, 10);
-//   gltf.scene.position.set(0, -4, 0);
-//   gltf.scene.rotation.y = Math.PI * 0.5;
-//   scene.add(gltf.scene);
-
-//   gui
-//     .add(gltf.scene.rotation, 'y')
-//     .min(-Math.PI)
-//     .max(Math.PI)
-//     .step(0.001)
-//     .name('rotation');
-
-//   updateAllMaterials();
-// });
-
+// Texture
 const textureLoader = new THREE.TextureLoader();
 
 const bakedTexture = textureLoader.load('/models/Musholla_Bake1_CyclesBake_COMBINED.png');
@@ -110,13 +90,27 @@ const bakedMaterial = new THREE.MeshBasicMaterial({
   map: bakedTexture
 });
 
+// Load Model
 gltfLoader.load('/models/rendersimplebake.glb', gltf => {
+  gltf.scene.scale.set(0.3, 0.3, 0.3);
+  gltf.scene.position.set(0, -1, 0);
+  scene.add(gltf.scene);
+
+  // Rotation
+  gui
+    .add(gltf.scene.rotation, 'y')
+    .min(-Math.PI)
+    .max(Math.PI)
+    .step(0.001)
+    .name('rotation');
+
   gltf.scene.traverse((child) => {
     if (child instanceof THREE.Mesh) {
       child.material = bakedMaterial;
     }
   });
   scene.add(gltf.scene);
+  updateAllMaterials();
 });
 
 /**
@@ -234,11 +228,11 @@ gui.add(renderer, 'toneMappingExposure').min(0).max(10).step(0.001);
 /**
  * Animate
  */
+
 const tick = () => {
   // Update controls
   controls.update();
 
-  // Render
   renderer.render(scene, camera);
 
   // Call tick again on the next frame
