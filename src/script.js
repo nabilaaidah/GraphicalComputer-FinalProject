@@ -82,10 +82,14 @@ const bakedMaterial = new THREE.MeshStandardMaterial({
   map: bakedTexture,
 });
 
-// Load Model
 gltfLoader.load("/models/rendersimplebake.glb", (gltf) => {
   gltf.scene.scale.set(0.3, 0.3, 0.3);
-  gltf.scene.position.set(0, -1, 0);
+
+  // Centering the object
+  const box = new THREE.Box3().setFromObject(gltf.scene);
+  const center = box.getCenter(new THREE.Vector3());
+  gltf.scene.position.sub(center);
+
   scene.add(gltf.scene);
 
   // Rotation
@@ -99,7 +103,6 @@ gltfLoader.load("/models/rendersimplebake.glb", (gltf) => {
     }
   });
 
-  scene.add(gltf.scene);
   updateAllMaterials();
 });
 
