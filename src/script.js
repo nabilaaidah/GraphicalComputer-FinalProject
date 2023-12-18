@@ -82,7 +82,10 @@ const bakedMaterial = new THREE.MeshStandardMaterial({
   map: bakedTexture,
 });
 
+let gltfObject;
+
 gltfLoader.load("/models/rendersimplebake.glb", (gltf) => {
+  gltfObject = gltf;
   gltf.scene.scale.set(0.3, 0.3, 0.3);
 
   // Centering the object
@@ -95,11 +98,31 @@ gltfLoader.load("/models/rendersimplebake.glb", (gltf) => {
   // Rotation
   gui.add(gltf.scene.rotation, "y").min(-Math.PI).max(Math.PI).step(0.001).name("rotation");
 
+  // Adjusting material properties for glass
+  const glassMaterial = new THREE.MeshStandardMaterial({
+    map: bakedTexture,
+    metalness: 1,    // Set to 1 for a metal-like reflection
+    roughness: 0.1,  // Adjust the roughness for glossiness
+    transparent: true,
+    opacity: 0.99,    // Set opacity for transparency
+  });
+
   gltf.scene.traverse((child) => {
     if (child instanceof THREE.Mesh) {
-      child.material = bakedMaterial;
-      child.castShadow = true;
-      child.receiveShadow = true;
+      //console.log("Mesh Name:", child.name);
+      if (child.name.includes("Cube")) {
+        child.material = glassMaterial;
+        child.castShadow = true;
+        child.receiveShadow = true;
+      } 
+      if (child.name.includes("Cube_1") || child.name.includes("Cube_2") || child.name.includes("Cube_3")
+        || child.name.includes("Cube_4") || child.name.includes("Cube_5") || child.name.includes("Cube_6")
+        || child.name.includes("Cube_6") || child.name.includes("Cube_7") || child.name.includes("Cube_8")
+        || child.name.includes("Cube_9")) {
+        child.material = bakedMaterial; // Keep original material for non-glass parts
+        child.castShadow = true;
+        child.receiveShadow = true;
+      }
     }
   });
 
@@ -196,9 +219,40 @@ gui.add(renderer, "toneMappingExposure").min(0).max(10).step(0.001);
 /**
  * Animate
  */
+const rotationControls = {
+  rotateScene: false,
+};
+
+const spinningControls = {
+  rotateObjectX: false, // Add properties for each desired axis
+  rotateObjectY: false,
+  rotateObjectZ: false,
+  rotateScene: false,
+};
+
+gui.add(spinningControls, "rotateObjectX").name("Object X Rotation");
+gui.add(spinningControls, "rotateObjectY").name("Object Y Rotation");
+gui.add(spinningControls, "rotateObjectZ").name("Object Z Rotation");
+gui.add(rotationControls, "rotateScene").name("Scene Rotation");
+
 
 const tick = () => {
   // Update controls
+  if (rotationControls.rotateScene) {
+    // Rotate the entire scene
+    scene.rotation.x += 0.005; // Adjust the rotation speed as needed
+    scene.rotation.y += 0.002; // Adjust the rotation speed as needed
+  }
+
+  if (spinningControls.rotateObjectX) {
+    gltfObject.scene.rotation.x += 0.01; // Adjust rotation speed
+  }
+  if (spinningControls.rotateObjectY) {
+    gltfObject.scene.rotation.y += 0.01; // Adjust rotation speed
+  }
+  if (spinningControls.rotateObjectZ) {
+    gltfObject.scene.rotation.z += 0.01; // Adjust rotation speed
+  }
   controls.update();
 
   renderer.render(scene, camera);
