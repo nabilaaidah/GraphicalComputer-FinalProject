@@ -1,9 +1,9 @@
-import './style.css';
-import * as THREE from 'three';
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
-import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
-import * as dat from 'dat.gui';
-import { PCFShadowMap, sRGBEncoding } from 'three';
+import "./style.css";
+import * as THREE from "three";
+import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
+import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
+import * as dat from "dat.gui";
+import { PCFShadowMap, sRGBEncoding } from "three";
 
 /**
  * Loaders
@@ -20,7 +20,7 @@ const gui = new dat.GUI();
 const debugObject = {};
 
 // Canvas
-const canvas = document.querySelector('canvas.webgl');
+const canvas = document.querySelector("canvas.webgl");
 
 // Scene
 const scene = new THREE.Scene();
@@ -39,12 +39,9 @@ const scene = new THREE.Scene();
  */
 
 const updateAllMaterials = () => {
-  scene.traverse(child => {
+  scene.traverse((child) => {
     // console.log(child);
-    if (
-      child instanceof THREE.Mesh &&
-      child.material instanceof THREE.MeshStandardMaterial
-    ) {
+    if (child instanceof THREE.Mesh && child.material instanceof THREE.MeshStandardMaterial) {
       //   console.log(child);
       //   child.material.envMap = environmentMap;
       child.material.envMapIntensity = debugObject.envMapIntensity;
@@ -59,12 +56,12 @@ const updateAllMaterials = () => {
  * Environments Map
  */
 const environmentMap = cubeTextureLoader.load([
-  '/textures/environmentMaps/3/px.jpg',
-  '/textures/environmentMaps/3/nx.jpg',
-  '/textures/environmentMaps/3/py.jpg',
-  '/textures/environmentMaps/3/ny.jpg',
-  '/textures/environmentMaps/3/pz.jpg',
-  '/textures/environmentMaps/3/nz.jpg'
+  "/textures/environmentMaps/3/px.jpg",
+  "/textures/environmentMaps/3/nx.jpg",
+  "/textures/environmentMaps/3/py.jpg",
+  "/textures/environmentMaps/3/ny.jpg",
+  "/textures/environmentMaps/3/pz.jpg",
+  "/textures/environmentMaps/3/nz.jpg",
 ]);
 environmentMap.encoding = sRGBEncoding;
 
@@ -72,43 +69,36 @@ scene.background = environmentMap;
 scene.environment = environmentMap;
 
 debugObject.envMapIntensity = 5;
-gui
-  .add(debugObject, 'envMapIntensity')
-  .min(0)
-  .max(10)
-  .step(0.001)
-  .onChange(updateAllMaterials);
+gui.add(debugObject, "envMapIntensity").min(0).max(10).step(0.001).onChange(updateAllMaterials);
 
 // Texture
 const textureLoader = new THREE.TextureLoader();
 
-const bakedTexture = textureLoader.load('/models/Musholla_Bake1_CyclesBake_COMBINED.png');
+const bakedTexture = textureLoader.load("/models/Musholla_Bake1_CyclesBake_COMBINED.png");
 bakedTexture.flipY = false;
 bakedTexture.encoding = THREE.sRGBEncoding;
 
-const bakedMaterial = new THREE.MeshBasicMaterial({
-  map: bakedTexture
+const bakedMaterial = new THREE.MeshStandardMaterial({
+  map: bakedTexture,
 });
 
 // Load Model
-gltfLoader.load('/models/rendersimplebake.glb', gltf => {
+gltfLoader.load("/models/rendersimplebake.glb", (gltf) => {
   gltf.scene.scale.set(0.3, 0.3, 0.3);
   gltf.scene.position.set(0, -1, 0);
   scene.add(gltf.scene);
 
   // Rotation
-  gui
-    .add(gltf.scene.rotation, 'y')
-    .min(-Math.PI)
-    .max(Math.PI)
-    .step(0.001)
-    .name('rotation');
+  gui.add(gltf.scene.rotation, "y").min(-Math.PI).max(Math.PI).step(0.001).name("rotation");
 
   gltf.scene.traverse((child) => {
     if (child instanceof THREE.Mesh) {
       child.material = bakedMaterial;
+      child.castShadow = true;
+      child.receiveShadow = true;
     }
   });
+
   scene.add(gltf.scene);
   updateAllMaterials();
 });
@@ -116,7 +106,7 @@ gltfLoader.load('/models/rendersimplebake.glb', gltf => {
 /**
  * Lights
  */
-const directionalLight = new THREE.DirectionalLight('#ffffff', 2.5);
+const directionalLight = new THREE.DirectionalLight("#ffffff", 2.5);
 directionalLight.position.set(0.28, 5, 2.02);
 directionalLight.castShadow = true;
 directionalLight.shadow.camera.far = 15;
@@ -130,40 +120,20 @@ scene.add(directionalLight);
 // );
 // scene.add(directionalLightCameraHelper);
 
-gui
-  .add(directionalLight, 'intensity')
-  .min(0)
-  .max(10)
-  .step(0.001)
-  .name('lightIntensity');
-gui
-  .add(directionalLight.position, 'x')
-  .min(-5)
-  .max(5)
-  .step(0.001)
-  .name('lightX');
-gui
-  .add(directionalLight.position, 'y')
-  .min(-5)
-  .max(5)
-  .step(0.001)
-  .name('lightY');
-gui
-  .add(directionalLight.position, 'z')
-  .min(-5)
-  .max(5)
-  .step(0.001)
-  .name('lightZ');
+gui.add(directionalLight, "intensity").min(0).max(10).step(0.001).name("lightIntensity");
+gui.add(directionalLight.position, "x").min(-5).max(5).step(0.001).name("lightX");
+gui.add(directionalLight.position, "y").min(-5).max(5).step(0.001).name("lightY");
+gui.add(directionalLight.position, "z").min(-5).max(5).step(0.001).name("lightZ");
 
 /**
  * Sizes
  */
 const sizes = {
   width: window.innerWidth,
-  height: window.innerHeight
+  height: window.innerHeight,
 };
 
-window.addEventListener('resize', () => {
+window.addEventListener("resize", () => {
   // Update sizes
   sizes.width = window.innerWidth;
   sizes.height = window.innerHeight;
@@ -181,12 +151,7 @@ window.addEventListener('resize', () => {
  * Camera
  */
 // Base camera
-const camera = new THREE.PerspectiveCamera(
-  75,
-  sizes.width / sizes.height,
-  0.1,
-  100
-);
+const camera = new THREE.PerspectiveCamera(75, sizes.width / sizes.height, 0.1, 100);
 camera.position.set(4, 1, -4);
 scene.add(camera);
 
@@ -199,7 +164,7 @@ controls.enableDamping = true;
  */
 const renderer = new THREE.WebGLRenderer({
   canvas: canvas,
-  antialias: true
+  antialias: true,
 });
 renderer.setSize(sizes.width, sizes.height);
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -211,19 +176,19 @@ renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = PCFShadowMap;
 
 gui
-  .add(renderer, 'toneMapping', {
+  .add(renderer, "toneMapping", {
     No: THREE.NoToneMapping,
     Linear: THREE.LinearToneMapping,
     Reinhard: THREE.ReinhardToneMapping,
     Cineon: THREE.CineonToneMapping,
-    ACESFilmic: THREE.ACESFilmicToneMapping
+    ACESFilmic: THREE.ACESFilmicToneMapping,
   })
   .onFinishChange(() => {
     renderer.toneMapping = Number(renderer.toneMapping);
     updateAllMaterials();
   });
 
-gui.add(renderer, 'toneMappingExposure').min(0).max(10).step(0.001);
+gui.add(renderer, "toneMappingExposure").min(0).max(10).step(0.001);
 
 /**
  * Animate
