@@ -56,12 +56,12 @@ const updateAllMaterials = () => {
  * Environments Map
  */
 const environmentMap = cubeTextureLoader.load([
-  "/textures/environmentMaps/3/px.jpg",
-  "/textures/environmentMaps/3/nx.jpg",
-  "/textures/environmentMaps/3/py.jpg",
-  "/textures/environmentMaps/3/ny.jpg",
-  "/textures/environmentMaps/3/pz.jpg",
-  "/textures/environmentMaps/3/nz.jpg",
+  "/textures/environmentMaps/1/px.jpg",
+  "/textures/environmentMaps/1/nx.jpg",
+  "/textures/environmentMaps/1/py.jpg",
+  "/textures/environmentMaps/1/ny.jpg",
+  "/textures/environmentMaps/1/pz.jpg",
+  "/textures/environmentMaps/1/nz.jpg",
 ]);
 environmentMap.encoding = sRGBEncoding;
 
@@ -101,10 +101,10 @@ gltfLoader.load("/models/rendersimplebake.glb", (gltf) => {
   // Adjusting material properties for glass
   const glassMaterial = new THREE.MeshStandardMaterial({
     map: bakedTexture,
-    metalness: 1,    // Set to 1 for a metal-like reflection
-    roughness: 0.1,  // Adjust the roughness for glossiness
+    metalness: 1, // Set to 1 for a metal-like reflection
+    roughness: 0.1, // Adjust the roughness for glossiness
     transparent: true,
-    opacity: 0.99,    // Set opacity for transparency
+    opacity: 0.99, // Set opacity for transparency
   });
 
   gltf.scene.traverse((child) => {
@@ -114,11 +114,19 @@ gltfLoader.load("/models/rendersimplebake.glb", (gltf) => {
         child.material = glassMaterial;
         child.castShadow = true;
         child.receiveShadow = true;
-      } 
-      if (child.name.includes("Cube_1") || child.name.includes("Cube_2") || child.name.includes("Cube_3")
-        || child.name.includes("Cube_4") || child.name.includes("Cube_5") || child.name.includes("Cube_6")
-        || child.name.includes("Cube_6") || child.name.includes("Cube_7") || child.name.includes("Cube_8")
-        || child.name.includes("Cube_9")) {
+      }
+      if (
+        child.name.includes("Cube_1") ||
+        child.name.includes("Cube_2") ||
+        child.name.includes("Cube_3") ||
+        child.name.includes("Cube_4") ||
+        child.name.includes("Cube_5") ||
+        child.name.includes("Cube_6") ||
+        child.name.includes("Cube_6") ||
+        child.name.includes("Cube_7") ||
+        child.name.includes("Cube_8") ||
+        child.name.includes("Cube_9")
+      ) {
         child.material = bakedMaterial; // Keep original material for non-glass parts
         child.castShadow = true;
         child.receiveShadow = true;
@@ -132,19 +140,20 @@ gltfLoader.load("/models/rendersimplebake.glb", (gltf) => {
 /**
  * Lights
  */
+// Creating a directional light with a white color and intensity of 2.5
 const directionalLight = new THREE.DirectionalLight("#ffffff", 2.5);
-directionalLight.position.set(0.28, 5, 2.02);
-directionalLight.castShadow = true;
+directionalLight.position.set(0.28, 5, 2.02); // Setting the position of the directional light in 3D space
+directionalLight.castShadow = true; // Enabling shadow casting for the directional ligh
+
+// Configuring the shadow properties of the light's camerat
 directionalLight.shadow.camera.far = 15;
 directionalLight.shadow.mapSize.set(1024, 1024);
 directionalLight.shadow.normalBias = 0.05; // the value btw 0.02 and 0.05 will be enough
 scene.add(directionalLight);
 
-// // Camera Helper
-// const directionalLightCameraHelper = new THREE.CameraHelper(
-//   directionalLight.shadow.camera
-// );
-// scene.add(directionalLightCameraHelper);
+// Camera Helper
+const directionalLightCameraHelper = new THREE.CameraHelper(directionalLight.shadow.camera);
+scene.add(directionalLightCameraHelper);
 
 gui.add(directionalLight, "intensity").min(0).max(10).step(0.001).name("lightIntensity");
 gui.add(directionalLight.position, "x").min(-5).max(5).step(0.001).name("lightX");
@@ -228,13 +237,29 @@ const spinningControls = {
   rotateObjectY: false,
   rotateObjectZ: false,
   rotateScene: false,
+  autoRotateLight: false,
 };
 
+gui.add(spinningControls, "autoRotateLight").name("Auto Rotate Light");
 gui.add(spinningControls, "rotateObjectX").name("Object X Rotation");
 gui.add(spinningControls, "rotateObjectY").name("Object Y Rotation");
 gui.add(spinningControls, "rotateObjectZ").name("Object Z Rotation");
 gui.add(rotationControls, "rotateScene").name("Scene Rotation");
 
+const autoRotateLight = () => {
+  if (spinningControls.autoRotateLight) {
+    const time = performance.now();
+    const speed = 0.0005;
+
+    const angle = time * speed;
+    directionalLight.position.x = Math.cos(angle) * 5;
+    directionalLight.position.z = Math.sin(angle) * 5;
+
+    const target = new THREE.Vector3(0, 0, 0);
+    directionalLight.target.position.copy(target);
+    directionalLight.target.updateMatrixWorld();
+  }
+};
 
 const tick = () => {
   // Update controls
@@ -253,6 +278,8 @@ const tick = () => {
   if (spinningControls.rotateObjectZ) {
     gltfObject.scene.rotation.z += 0.01; // Adjust rotation speed
   }
+
+  autoRotateLight();
   controls.update();
 
   renderer.render(scene, camera);
